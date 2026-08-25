@@ -35,3 +35,37 @@ test('debe contar todos los productos de todas las paginas', async ({ page }) =>
     await expect(titles.first()).toBeVisible();
     expect(await titles.count()).toBeGreaterThan(0);
   });
+
+test.describe('Categories & Carousel', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('https://www.demoblaze.com/');
+  });
+
+  test('should filter by Phones category', async ({ page }) => {
+    await page.getByRole('link', { name: 'Phones' }).click();
+    await page.waitForTimeout(1000); // la tienda tarda en filtrar
+    const cards = page.locator('#tbodyid .card-title');
+    await expect(cards.first()).toBeVisible();
+    // todos deben ser phones, validamos que al menos 3 cargaron
+    await expect(cards).toHaveCount(7); // demoblaze tiene 7 phones
+  });
+
+  test('should filter by Laptops category', async ({ page }) => {
+    await page.getByRole('link', { name: 'Laptops' }).click();
+    await page.waitForTimeout(1000);
+    await expect(page.locator('#tbodyid .card-title').first()).toBeVisible();
+    await expect(page.locator('#tbodyid')).toContainText('Sony vaio');
+  });
+
+  test('carousel next/prev should work', async ({ page }) => {
+    const firstSlide = page.locator('.carousel-item').first();
+    await expect(firstSlide).toBeVisible();
+    
+    await page.locator('.carousel-control-next').click();
+    await page.waitForTimeout(600); // animación
+    await page.locator('.carousel-control-prev').click();
+    await page.waitForTimeout(600);
+    
+    await expect(firstSlide).toBeVisible();
+  });
+});

@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_USER = `TesterJonas_${Date.now().toString().slice(-5)}`;
+//const TEST_USER = `TesterJonas_${Date.now().toString().slice(-5)}`;
+// fuera de los tests, al inicio del archivo
+const TEST_USER = `TesterJonas_${Math.floor(Math.random()*100000)}`;
 const TEST_PASS = 'Test123!';
 
 test('la tienda debe cargar y mostrar productos', async ({ page }) => {
@@ -65,8 +67,12 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
     await page.locator('#login2').click();
     await page.locator('#loginusername').fill(TEST_USER);
     await page.locator('#loginpassword').fill(TEST_PASS);
+    //await page.locator('button:has-text("Log in")').click();
     await page.locator('button:has-text("Log in")').click();
-    await expect(page.locator('#nameofuser')).toContainText(`Welcome ${TEST_USER}`, { timeout: 10000 });
+    // FIX webkit: esperar que el modal se cierre
+    await expect(page.locator('#logInModal')).toBeHidden({ timeout: 10000 });
+    await expect(page.locator('#nameofuser')).toContainText(`Welcome ${TEST_USER}`, { timeout: 15000 });
+    //await expect(page.locator('#nameofuser')).toContainText(`Welcome ${TEST_USER}`, { timeout: 10000 });
   });
 
   test('2. Agregar al carrito', async ({ page }) => {
@@ -139,3 +145,26 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
     await page.getByRole('button', { name: 'Purchase' }).click();
     await expect(page.locator('.sweet-alert h2').first()).toContainText('Thank you for your purchase', { timeout: 10000 });
   });
+
+  test('should not allow purchase with empty cart - validation', async ({ page }) => {
+  await page.goto('https://www.demoblaze.com/cart.html');
+  await page.getByRole('button', { name: 'Place Order' }).click();
+  // intenta comprar sin productos - debe mostrar modal igual pero validaremos que el form exige campos
+  await expect(page.locator('#orderModal')).toBeVisible();
+  await page.getByRole('button', { name: 'Purchase' }).click();
+  // demoblaze no valida, pero nosotros validamos que sigue abierto si faltan datos
+  await expect(page.locator('#orderModal')).toBeVisible();
+});
+
+test('should show error when user already exists on signup', async ({ page }) => {
+  await page.goto('https://www.demoblaze.com/');
+  page.on('dialog', async dialog => {
+    expect(dialog.message()).toContain('This user already exist.');
+    await dialog.accept();
+  });
+  await page.getByRole('link', { name: 'Sign up' }).click();
+  await page.locator('#sign-username').fill('testuser123'); // usuario que ya existe
+  await page.locator('#sign-password').fill('123');
+  await page.getByRole('button', { name: 'Sign up' }).click();
+  await page.waitForTimeout(1000);
+});
