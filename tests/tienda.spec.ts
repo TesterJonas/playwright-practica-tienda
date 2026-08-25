@@ -18,6 +18,14 @@ test('la tienda debe cargar y mostrar productos', async ({ page }) => {
   console.log(`Hay ${await productos.count()} productos en la tienda`);
 });
 
+test('Carrito vacio - debe mostrar tabla vacia', async ({ page }) => {
+  // Entra directo sin loguearte
+  await page.goto('https://www.demoblaze.com/cart.html');
+  // En demoblaze, si está vacío no hay filas en #tbodyid
+  const rows = page.locator('#tbodyid tr');
+  await expect(rows).toHaveCount(0);
+});
+
 test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
 
   test.beforeAll(async ({ browser }) => {
