@@ -122,3 +122,20 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
     expect(precioCarrito).toMatch(/\d+/);
   });
 });
+
+  test('compra completa debe mostrar Thank you for your purchase', async ({ page }) => {
+    await page.goto('https://www.demoblaze.com/prod.html?idp_=1');
+    page.once('dialog', dialog => dialog.accept());
+    await page.getByRole('link', { name: 'Add to cart' }).click();
+    await page.goto('https://www.demoblaze.com/cart.html');
+    await page.waitForTimeout(2000);
+    await page.getByRole('button', { name: 'Place Order' }).click();
+    await page.locator('#name').fill('Jonas Test');
+    await page.locator('#country').fill('Mexico');
+    await page.locator('#city').fill('Ensenada');
+    await page.locator('#card').fill('4242424242424242');
+    await page.locator('#month').fill('12');
+    await page.locator('#year').fill('2026');
+    await page.getByRole('button', { name: 'Purchase' }).click();
+    await expect(page.locator('.sweet-alert h2').first()).toContainText('Thank you for your purchase', { timeout: 10000 });
+  });

@@ -26,3 +26,12 @@ test('debe contar todos los productos de todas las paginas', async ({ page }) =>
   console.log(`Total real en la tienda: ${totalProductos}`);
   expect(totalProductos).toBeGreaterThan(9);
 });
+
+  test('filtrado por categoria Laptops debe mostrar productos', async ({ page }) => {
+    await page.goto('https://www.demoblaze.com/index.html');
+    await page.getByRole('link', { name: 'Laptops' }).click();
+    await expect(page.locator('#tbodyid').first()).toBeVisible({ timeout: 10000 });
+    const titles = page.locator('#tbodyid h4 a');
+    await expect(titles.first()).toBeVisible();
+    expect(await titles.count()).toBeGreaterThan(0);
+  });
