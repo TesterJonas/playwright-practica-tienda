@@ -5,7 +5,7 @@ Proyecto de automatización E2E para practicar compras en tienda demo usando Pla
 ## 🚀 Tecnologías
 - Playwright
 - TypeScript
-- Page Object Model (POM)
+- Page Object Model (POM) -- In progress
 
 ## 📋 Casos cubiertos
 - Login
