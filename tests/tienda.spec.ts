@@ -55,11 +55,11 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
     await expect(page).toHaveTitle(/STORE/);
   });
 
- //test('0. Registro - usuario unico por ejecucion', async ({  }) => {
-    // Este test solo documenta que el usuario ya fue creado en beforeAll
-    // Se verá verde en el reporte
-    //expect(TEST_USER).toContain('TesterJonas_');
-    //console.log(`Usando usuario: ${TEST_USER}`);
+  //test('0. Registro - usuario unico por ejecucion', async ({  }) => {
+  // Este test solo documenta que el usuario ya fue creado en beforeAll
+  // Se verá verde en el reporte
+  //expect(TEST_USER).toContain('TesterJonas_');
+  //console.log(`Usando usuario: ${TEST_USER}`);
   //});
 
   test('1. Login', async ({ page }) => {
