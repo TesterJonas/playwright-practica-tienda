@@ -11,7 +11,7 @@ test('compra completa con POM', async ({ page }) => {
   const checkout = new CheckoutPage(page);
 
   await login.goto();
-  await login.login(process.env.USERNAME!, process.env.PASSWORD!);
+  await login.login(process.env.STANDARD_USER!, process.env.PASSWORD!);
   
   await products.addFirstProductToCart();
   await products.goToCart();
