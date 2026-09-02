@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 //const TEST_USER = `TesterJonas_${Date.now().toString().slice(-5)}`;
 // fuera de los tests, al inicio del archivo
-const TEST_USER = `TesterJonas_${Math.floor(Math.random()*100000)}`;
+const TEST_USER = `TesterJonas_${Math.floor(Math.random() * 100000)}`;
 const TEST_PASS = 'Test123!';
 
 test('la tienda debe cargar y mostrar productos', async ({ page }) => {
@@ -15,9 +15,9 @@ test('la tienda debe cargar y mostrar productos', async ({ page }) => {
   // 3. Verifica que haya productos cargados
   const productos = page.locator('.card-title');
   await expect(productos.first()).toBeVisible();
-  
+
   // 4. Cuenta cuantos productos hay
-  console.log(`Hay ${await productos.count()} productos en la tienda`);
+  //console.log(`Hay ${await productos.count()} productos en la tienda`);
 });
 
 test('Carrito vacio - debe mostrar tabla vacia', async ({ page }) => {
@@ -29,26 +29,25 @@ test('Carrito vacio - debe mostrar tabla vacia', async ({ page }) => {
 });
 
 test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
-
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
     await page.goto('https://www.demoblaze.com/');
-    
+
     await page.locator('#signin2').click();
     // espera a que aparezca el modal
     await page.locator('#sign-username').waitFor({ state: 'visible' });
     await page.locator('#sign-username').fill(TEST_USER);
     await page.locator('#sign-password').fill(TEST_PASS);
 
-    page.once('dialog', async dialog => {
-      console.log(`[Registro] ${dialog.message()}`);
+    page.once('dialog', async (dialog) => {
+      //console.log(`[Registro] ${dialog.message()}`);
       await dialog.accept();
     });
 
     await page.locator('button:has-text("Sign up")').click();
     await page.waitForTimeout(2500);
     await page.close();
-    console.log(`Usuario creado para esta corrida: ${TEST_USER}`);
+    //console.log(`Usuario creado para esta corrida: ${TEST_USER}`);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -56,12 +55,12 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
     await expect(page).toHaveTitle(/STORE/);
   });
 
-  test('0. Registro - usuario unico por ejecucion', async ({ page }) => {
+ //test('0. Registro - usuario unico por ejecucion', async ({  }) => {
     // Este test solo documenta que el usuario ya fue creado en beforeAll
     // Se verá verde en el reporte
-    expect(TEST_USER).toContain('TesterJonas_');
-    console.log(`Usando usuario: ${TEST_USER}`);
-  });
+    //expect(TEST_USER).toContain('TesterJonas_');
+    //console.log(`Usando usuario: ${TEST_USER}`);
+  //});
 
   test('1. Login', async ({ page }) => {
     await page.locator('#login2').click();
@@ -71,25 +70,27 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
     await page.locator('button:has-text("Log in")').click();
     // FIX webkit: esperar que el modal se cierre
     await expect(page.locator('#logInModal')).toBeHidden({ timeout: 10000 });
-    await expect(page.locator('#nameofuser')).toContainText(`Welcome ${TEST_USER}`, { timeout: 15000 });
+    await expect(page.locator('#nameofuser')).toContainText(`Welcome ${TEST_USER}`, {
+      timeout: 15000,
+    });
     //await expect(page.locator('#nameofuser')).toContainText(`Welcome ${TEST_USER}`, { timeout: 10000 });
   });
 
   test('2. Agregar al carrito', async ({ page }) => {
     await page.locator('.card-title').first().click();
     await expect(page.locator('h2').first()).toBeVisible();
-    
-    page.once('dialog', async dialog => await dialog.accept());
+
+    page.once('dialog', async (dialog) => await dialog.accept());
     await page.locator('a:has-text("Add to cart")').click();
     await page.waitForTimeout(1000);
-    
+
     await page.locator('#cartur').click();
     await expect(page.locator('.success').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('3. Checkout completo', async ({ page }) => {
     await page.locator('.card-title').first().click();
-    page.once('dialog', async dialog => await dialog.accept());
+    page.once('dialog', async (dialog) => await dialog.accept());
     await page.locator('a:has-text("Add to cart")').click();
     await page.waitForTimeout(1500);
     await page.locator('#cartur').click();
@@ -111,16 +112,16 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
   test('4. Validacion de precios', async ({ page }) => {
     await page.locator('.card-title').first().click();
     const precioDetalle = await page.locator('h3.price-container').textContent();
-    console.log(`Precio detalle: ${precioDetalle}`);
+    //console.log(`Precio detalle: ${precioDetalle}`);
 
-    page.once('dialog', async d => await d.accept());
+    page.once('dialog', async (d) => await d.accept());
     await page.locator('a:has-text("Add to cart")').click();
     await page.waitForTimeout(1000);
     await page.locator('#cartur').click();
     await page.locator('tbody tr').first().waitFor({ timeout: 10000 });
 
     const precioCarrito = await page.locator('td').nth(2).first().textContent();
-    console.log(`Precio carrito: ${precioCarrito}`);
+    //console.log(`Precio carrito: ${precioCarrito}`);
 
     expect(precioCarrito?.trim()).not.toBe('');
     // Valida que ambos precios contengan números
@@ -129,24 +130,27 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
   });
 });
 
-  test('compra completa debe mostrar Thank you for your purchase', async ({ page }) => {
-    await page.goto('https://www.demoblaze.com/prod.html?idp_=1');
-    page.once('dialog', dialog => dialog.accept());
-    await page.getByRole('link', { name: 'Add to cart' }).click();
-    await page.goto('https://www.demoblaze.com/cart.html');
-    await page.waitForTimeout(2000);
-    await page.getByRole('button', { name: 'Place Order' }).click();
-    await page.locator('#name').fill('Jonas Test');
-    await page.locator('#country').fill('Mexico');
-    await page.locator('#city').fill('Ensenada');
-    await page.locator('#card').fill('4242424242424242');
-    await page.locator('#month').fill('12');
-    await page.locator('#year').fill('2026');
-    await page.getByRole('button', { name: 'Purchase' }).click();
-    await expect(page.locator('.sweet-alert h2').first()).toContainText('Thank you for your purchase', { timeout: 10000 });
-  });
+test('compra completa debe mostrar Thank you for your purchase', async ({ page }) => {
+  await page.goto('https://www.demoblaze.com/prod.html?idp_=1');
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('link', { name: 'Add to cart' }).click();
+  await page.goto('https://www.demoblaze.com/cart.html');
+  await page.waitForTimeout(2000);
+  await page.getByRole('button', { name: 'Place Order' }).click();
+  await page.locator('#name').fill('Jonas Test');
+  await page.locator('#country').fill('Mexico');
+  await page.locator('#city').fill('Ensenada');
+  await page.locator('#card').fill('4242424242424242');
+  await page.locator('#month').fill('12');
+  await page.locator('#year').fill('2026');
+  await page.getByRole('button', { name: 'Purchase' }).click();
+  await expect(page.locator('.sweet-alert h2').first()).toContainText(
+    'Thank you for your purchase',
+    { timeout: 10000 },
+  );
+});
 
-  test('should not allow purchase with empty cart - validation', async ({ page }) => {
+test('should not allow purchase with empty cart - validation', async ({ page }) => {
   await page.goto('https://www.demoblaze.com/cart.html');
   await page.getByRole('button', { name: 'Place Order' }).click();
   // intenta comprar sin productos - debe mostrar modal igual pero validaremos que el form exige campos
@@ -158,7 +162,7 @@ test.describe('Flujo E2E DemoBlaze - Reporte Completo', () => {
 
 test('should show error when user already exists on signup', async ({ page }) => {
   await page.goto('https://www.demoblaze.com/');
-  page.on('dialog', async dialog => {
+  page.on('dialog', async (dialog) => {
     expect(dialog.message()).toContain('This user already exist.');
     await dialog.accept();
   });
