@@ -46,4 +46,12 @@ export class ProductsPage {
   async sortBy(option: 'az' | 'za' | 'lohi' | 'hilo') {
     await this.sortDropdown.selectOption(option);
   }
+
+  async addFirstProductToCart() {
+    const addButton = this.page.locator('[data-test^="add-to-cart-"]').first();
+    await addButton.waitFor({ state: 'visible' });
+    await addButton.click();
+  
+  }
 }
+
