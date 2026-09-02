@@ -11,6 +11,6 @@ test('usuario puede agregar producto al carrito', async ({ page }) => {
   await productsPage.isLoaded();
 
   await productsPage.addProductToCart('Sauce Labs Backpack');
-  const count = await productsPage.getCartCount();
-  console.log(`Productos en carrito: ${count}`);
+  //const count = await productsPage.getCartCount();
+  //console.log(`Productos en carrito: ${count}`);
 });

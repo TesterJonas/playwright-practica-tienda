@@ -51,7 +51,5 @@ export class ProductsPage {
     const addButton = this.page.locator('[data-test^="add-to-cart-"]').first();
     await addButton.waitFor({ state: 'visible' });
     await addButton.click();
-  
   }
 }
-

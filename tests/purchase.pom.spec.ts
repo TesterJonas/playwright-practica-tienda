@@ -12,10 +12,10 @@ test('compra completa con POM', async ({ page }) => {
 
   await login.goto();
   await login.login(process.env.STANDARD_USER!, process.env.PASSWORD!);
-  
+
   await products.addFirstProductToCart();
   await products.goToCart();
-  
+
   await cart.proceedToCheckout();
   await checkout.fillInfoAndFinish();
 
