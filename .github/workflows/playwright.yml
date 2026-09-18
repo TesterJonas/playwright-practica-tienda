@@ -72,18 +72,28 @@ jobs:
         if: always()
         run: |
           mkdir -p allure-results/history
-          cp -r gh-pages/history/* allure-results/history/ 2>/dev/null || true
-          ls -la allure-results/history/ || echo "No previous history"
+          if [ -d "gh-pages/history" ]; then
+            cp -r gh-pages/history/* allure-results/history/ || true
+            echo "History restored:"
+            ls -la allure-results/history/ | head -20
+          fi
       - name: Generate Allure Report
         run: |
           npm install -g allure-commandline
           allure generate allure-results -o allure-report --clean
+      - name: Update gh-pages history
+        if: always()
+        run: |
+          mkdir -p gh-pages/history
+          cp -r allure-report/history/* gh-pages/history/ || true
       - name: Combine reports
         run: |
           mkdir -p combined-report/playwright
           mkdir -p combined-report/allure
+          mkdir -p combined-report/history
           cp -r playwright-report/* combined-report/playwright/ || true
           cp -r allure-report/* combined-report/allure/ || true
+          cp -r gh-pages/history/* combined-report/history/ || true
           echo '<html><body><h1>QA Reports</h1><ul><li><a href="./playwright/index.html">Playwright HTML</a></li><li><a href="./allure/index.html">Allure Report</a></li></ul></body></html>' > combined-report/index.html
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v3
