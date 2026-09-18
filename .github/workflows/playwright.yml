@@ -77,7 +77,7 @@ jobs:
           retention-days: 30
 
   deploy-report:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ always () && github.ref == 'refs/heads/main' }}
     needs: test
     runs-on: ubuntu-latest
     permissions:
