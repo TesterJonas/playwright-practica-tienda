@@ -72,11 +72,21 @@ jobs:
         if: always()
         run: |
           mkdir -p allure-results/history
-          if [ -d "gh-pages/history" ]; then
-            cp -r gh-pages/history/* allure-results/history/ || true
-            echo "History restored:"
-            ls -la allure-results/history/ | head -20
-          fi
+          echo "--- Contenido de gh-pages/ ---"
+          ls -la gh-pages/ || true
+          echo "--- Contenido de gh-pages/allure-history/ ---"
+          ls -la gh-pages/allure-history/ || true
+            if [ -d "gh-pages/allure-history/history" ]; then
+              cp -r gh-pages/allure-history/history/* allure-results/history/ || true
+              echo "History restored from allure-history/history:"
+              ls -la allure-results/history/ | head -20
+            elif [ -d "gh-pages/history" ]; then
+              cp -r gh-pages/history/* allure-results/history/ || true
+              echo "History restored from history:"
+              ls -la allure-results/history/ | head -20
+            else
+              echo "No history found, first run"
+            fi
       - name: Generate Allure Report
         run: |
           npm install -g allure-commandline
