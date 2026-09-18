@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
@@ -30,6 +30,12 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results
+          path: allure-results/
+          retention-days: 30
 
   deploy-report:
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -44,15 +50,33 @@ jobs:
     steps:
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Download report
+      - name: Download Playwright report
         uses: actions/download-artifact@v4
         with:
           name: playwright-report
           path: ./playwright-report
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+      - name: Generate Allure Report
+        uses: simple-elf/allure-report-action@v1.9
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          keep_reports: 20
+      - name: Combine reports
+        run: |
+          mkdir -p combined-report/playwright
+          mkdir -p combined-report/allure
+          cp -r./playwright-report/* combined-report/playwright/ || true
+          cp -r allure-history/* combined-report/allure/ || true
+          echo '<h1>QA Reports</h1><ul><li><a href="./playwright/index.html">Playwright HTML</a></li><li><a href="./allure/index.html">Allure Report</a></li></ul>' > combined-report/index.html
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./playwright-report
+          path: ./combined-report
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
