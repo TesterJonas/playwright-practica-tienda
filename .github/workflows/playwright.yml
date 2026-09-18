@@ -5,6 +5,7 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+
 jobs:
   test:
     timeout-minutes: 60
@@ -18,6 +19,31 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+
+      # --- ESTO ES LO QUE ARREGLA EL TREND ---
+      - name: Checkout gh-pages for history
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Copy history to results
+        if: always()
+        run: |
+          mkdir -p allure-results/history
+          echo "Buscando history..."
+          ls -la gh-pages/ || echo "No gh-pages yet"
+          ls -la gh-pages/allure/history/ || true
+          if [ -d "gh-pages/allure/history" ]; then
+            cp -r gh-pages/allure/history/* allure-results/history/ || true
+            echo "History restored!"
+            ls allure-results/history/ | wc -l
+          else
+            echo "First run, no history"
+          fi
+
       - name: Run Playwright tests
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
@@ -25,11 +51,24 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
           LOCKED_USER: locked_out_user
         run: npx playwright test
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          allure generate allure-results -o allure-report --clean
+
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: ${{!cancelled() }}
         with:
           name: playwright-report
           path: playwright-report/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-report
+          path: allure-report/
           retention-days: 30
       - uses: actions/upload-artifact@v4
         if: always()
@@ -43,72 +82,38 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
       - name: Download Playwright report
         uses: actions/download-artifact@v4
         with:
           name: playwright-report
-          path: ./playwright-report
-      - name: Download Allure results
+          path: playwright-report
+      - name: Download Allure report
         uses: actions/download-artifact@v4
         with:
-          name: allure-results
-          path: allure-results
-      - name: Load Allure history from gh-pages
-        uses: actions/checkout@v4
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - name: Copy history to results
-        if: always()
-        run: |
-          mkdir -p allure-results/history
-          echo "--- Contenido de gh-pages/ ---"
-          ls -la gh-pages/ || true
-          echo "--- Contenido de gh-pages/allure-history/ ---"
-          ls -la gh-pages/allure-history/ || true
-            if [ -d "gh-pages/allure-history/history" ]; then
-              cp -r gh-pages/allure-history/history/* allure-results/history/ || true
-              echo "History restored from allure-history/history:"
-              ls -la allure-results/history/ | head -20
-            elif [ -d "gh-pages/history" ]; then
-              cp -r gh-pages/history/* allure-results/history/ || true
-              echo "History restored from history:"
-              ls -la allure-results/history/ | head -20
-            else
-              echo "No history found, first run"
-            fi
-      - name: Generate Allure Report
-        run: |
-          npm install -g allure-commandline
-          allure generate allure-results -o allure-report --clean
-      - name: Update gh-pages history
-        if: always()
-        run: |
-          mkdir -p gh-pages/history
-          cp -r allure-report/history/* gh-pages/history/ || true
+          name: allure-report
+          path: allure-report
+
       - name: Combine reports
         run: |
-          mkdir -p combined-report/playwright
           mkdir -p combined-report/allure
-          mkdir -p combined-report/history
+          mkdir -p combined-report/playwright
+          cp -r allure-report/* combined-report/allure/
           cp -r playwright-report/* combined-report/playwright/ || true
-          cp -r allure-report/* combined-report/allure/ || true
-          cp -r gh-pages/history/* combined-report/history/ || true
-          echo '<html><body><h1>QA Reports</h1><ul><li><a href="./playwright/index.html">Playwright HTML</a></li><li><a href="./allure/index.html">Allure Report</a></li></ul></body></html>' > combined-report/index.html
-      - name: Upload to Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./combined-report
+          cat > combined-report/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html><head><title>QA Reports</title></head>
+          <body style="font-family:sans-serif;text-align:center;margin-top:50px">
+          <h1>QA Reports</h1>
+          <p><a href="./playwright/index.html" style="font-size:20px">📄 Playwright HTML Report</a></p>
+          <p><a href="./allure/index.html" style="font-size:20px">📊 Allure Report (con Trend)</a></p>
+          </body></html>
+          EOF
+          ls -la combined-report/allure/history/
+
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir:./combined-report
