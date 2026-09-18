@@ -30,19 +30,18 @@ jobs:
           path: gh-pages
 
       - name: Copy history to results
-        if: always()
         run: |
-          mkdir -p allure-results/history
-          echo "Buscando history..."
-          ls -la gh-pages/ || echo "No gh-pages yet"
-          ls -la gh-pages/allure/history/ || true
-          if [ -d "gh-pages/allure/history" ]; then
-            cp -r gh-pages/allure/history/* allure-results/history/ || true
+          if [ -d "allure-history/allure-report/history" ]; then
+            mkdir -p allure-results/history
+            cp -r allure-history/allure-report/history/* allure-results/history/ || true
             echo "History restored!"
-            ls allure-results/history/ | wc -l
-          else
-            echo "First run, no history"
-          fi
+              elif [ -d "allure-history/history" ]; then
+              mkdir -p allure-results/history
+              cp -r allure-history/history/* allure-results/history/ || true
+              echo "History restored (legacy path)!"
+              else
+                echo "First run, no history - will be created now"
+            fi
 
       - name: Run Playwright tests
         env:
