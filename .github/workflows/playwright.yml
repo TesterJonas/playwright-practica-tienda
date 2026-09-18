@@ -72,7 +72,7 @@ jobs:
         if: always()
         run: |
           mkdir -p allure-results/history
-          cp -r gh-pages/allure/history/* allure-results/history/ 2>/dev/null || true
+          cp -r gh-pages/history/* allure-results/history/ 2>/dev/null || true
           ls -la allure-results/history/ || echo "No previous history"
       - name: Generate Allure Report
         run: |
