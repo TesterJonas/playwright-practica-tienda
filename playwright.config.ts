@@ -31,7 +31,7 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
     /* Guarda Evidencias */
     screenshot: 'on', // o 'only failure' si quieres cuando falle
-    video: 'retain-on-failure',     // guarda video solo si falla
+    video: 'retain-on-failure', // guarda video solo si falla
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },

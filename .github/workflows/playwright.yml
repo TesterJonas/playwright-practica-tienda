@@ -74,8 +74,8 @@ jobs:
           mkdir -p allure-results/history
           cp -r gh-pages/allure/history/* allure-results/history/ 2>/dev/null || true
           ls -la allure-results/history/ || echo "No previous history"
-          - name: Generate Allure Report
-      - run: |
+      - name: Generate Allure Report
+        run: |
           npm install -g allure-commandline
           allure generate allure-results -o allure-report --clean
       - name: Combine reports
