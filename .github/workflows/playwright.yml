@@ -61,18 +61,16 @@ jobs:
           name: allure-results
           path: allure-results
       - name: Generate Allure Report
-        uses: simple-elf/allure-report-action@v1.9
-        with:
-          allure_results: allure-results
-          allure_history: allure-history
-          keep_reports: 20
+        run: |
+            npm install -g allure-commandline
+            allure generate allure-results -o allure-report --clean
       - name: Combine reports
         run: |
           mkdir -p combined-report/playwright
           mkdir -p combined-report/allure
-          cp -r./playwright-report/* combined-report/playwright/ || true
-          cp -r allure-history/* combined-report/allure/ || true
-          echo '<h1>QA Reports</h1><ul><li><a href="./playwright/index.html">Playwright HTML</a></li><li><a href="./allure/index.html">Allure Report</a></li></ul>' > combined-report/index.html
+          cp -r playwright-report/* combined-report/playwright/ || true
+          cp -r allure-report/* combined-report/allure/ || true
+          echo '<html><body><h1>QA Reports</h1><ul><li><a href="./playwright/index.html">Playwright HTML</a></li><li><a href="./allure/index.html">Allure Report</a></li></ul></body></html>' > combined-report/index.html
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v3
         with:
