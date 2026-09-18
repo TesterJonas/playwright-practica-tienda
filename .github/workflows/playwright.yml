@@ -4,6 +4,7 @@ on:
     branches: [main, feature/*]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 jobs:
   test:
     timeout-minutes: 60
@@ -60,8 +61,21 @@ jobs:
         with:
           name: allure-results
           path: allure-results
-      - name: Generate Allure Report
+      - name: Load Allure history from gh-pages
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Copy history to results
+        if: always()
         run: |
+          mkdir -p allure-results/history
+          cp -r gh-pages/allure/history/* allure-results/history/ 2>/dev/null || true
+          ls -la allure-results/history/ || echo "No previous history"
+          - name: Generate Allure Report
+      - run: |
           npm install -g allure-commandline
           allure generate allure-results -o allure-report --clean
       - name: Combine reports
